@@ -1,3 +1,4 @@
+require('http').createServer((req,res)=>res.end('Mrr Right Alive')).listen(process.env.PORT||3000)
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 async function startBot() {
