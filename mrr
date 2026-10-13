@@ -1,0 +1,10 @@
+{
+  "name": "mrr-right-v81",
+  "version": "8.1.0",
+  "main": "index.js",
+  "scripts": { "start": "node index.js" },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.5",
+    "pino": "^8.19.0"
+  }
+}
