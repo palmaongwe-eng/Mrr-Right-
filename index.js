@@ -1,32 +1,38 @@
-require('http').createServer((req,res)=>res.end('Mrr Right Alive')).listen(process.env.PORT||3000)
+const express = require('express');
+const app = express();
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
-async function startBot() {
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.get('/', (req,res)=>{
+ res.send(`
+ <html><head><title>Mrr-Right Pair Site</title>
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <style>
+ body{background:#111;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh}
+ .box{background:#222;padding:25px;border-radius:15px;width:90%;max-width:350px;text-align:center}
+ input{width:90%;padding:12px;border-radius:8px;border:none;margin:10px 0}
+ button{padding:12px 20px;background:#25D366;color:#000;border:none;border-radius:8px;font-weight:bold;width:100%}
+ h2{color:#25D366}
+ </style></head><body>
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, ()=>console.log('Site Live on '+PORT));
+
+// Anza bot
+async function startBot(){
   const { state, saveCreds } = await useMultiFileAuthState('session');
-  const sock = makeWASocket({ auth: state, logger: pino({ level: 'silent' }), browser: ["Mrr-Right V8.1", "Chrome", "1.0"] });
+  const sock = makeWASocket({ auth: state, logger: pino({level:'silent'}) });
   sock.ev.on('creds.update', saveCreds);
-  if (!sock.authState.creds.registered) {
-    setTimeout(async () => {
-      const phone = process.env.PHONE_NUMBER || "254700000000";
-      const code = await sock.requestPairingCode(phone);
-      console.log(`PAIR CODE: ${code}`);
-    }, 3000);
-  }
-  sock.ev.on('connection.update', (u) => {
-    if (u.connection === 'open') console.log('✅ MRR-RIGHT ONLINE');
-    if (u.connection === 'close' && u.lastDisconnect?.error?.output?.statusCode!== DisconnectReason.loggedOut) startBot();
-  });
-  sock.ev.on('messages.upsert', async ({ messages }) => {
-    const m = messages[0]; if (!m?.message) return;
-    const jid = m.key.remoteJid;
-    const body = m.message.conversation || m.message.extendedTextMessage?.text || "";
-    if (!body.startsWith('.')) return;
-    const cmd = body.slice(1).split(/ +/)[0].toLowerCase();
-    const reply = (t) => sock.sendMessage(jid, { text: t }, { quoted: m });
-    if (cmd === 'ping') reply('Pong! MRR-RIGHT V8.1 Active ⚡');
-    if (cmd === 'menu') reply('*MRR-RIGHT V8.1*\n\n.ping\n.menu\n.owner\n.ai');
-    if (cmd === 'owner') reply('Owner: palmaongwe-eng\nBot: MRR-RIGHT V8.1 🔥');
-    if (cmd === 'ai') reply('AI: Poa boss, niko active!');
-  });
 }
+
 startBot();
+ <div class="box">
+ <h2>MRR-RIGHT BOT</h2>
+ <p>Weka Namba Yako Na Nchi Code<br>mfano 2547XXXXXXXX</p>
+ <input id="num" placeholder="2547XXXXXXXX" />
+ <button onclick="pair()">PATA PAIR CODE</button>
+ <h1 id="code" style="letter
