@@ -1,8 +1,42 @@
-const express=require('express');const app=express();const fs=require('fs');
-const {default:makeWASocket,useMultiFileAuthState}=require('@whiskeysockets/baileys');
-const pino=require('pino');
-app.get('/',(req,res)=>{res.send('<html><head><meta name="viewport" content="width=device-width"><style>body{background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif}.b{background:#111;padding:20px;border-radius:15px;width:90%;max-width:320px;text-align:center;border:1px solid gold}input{width:90%;padding:12px;border-radius:8px;border:none;margin:10px}button{padding:12px;width:95%;background:gold;border:none;border-radius:8px;font-weight:bold}#c{color:gold;font-size:30px;letter-spacing:5px}#p{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:gold;color:#000;padding:12px 18px;border-radius:10px;display:none;z-index:9;font-weight:bold}</style></head><body><div id="p">🔔 CODE IMEPATIKANA!</div><div class="b"><h2 style="color:gold">BOSTON 👑</h2><input id="i" placeholder="2547XXXXXXX"><button onclick="g()">PATA CODE</button><div id="c"></div><button onclick="navigator.clipboard.writeText(document.getElementById(`c`).innerText).then(()=>alert(`Copied!`))">📋 COPY</button><p id="m" style="font-size:12px;color:#aaa;margin-top:10px">WhatsApp > Linked Devices > Link with phone number</p></div><script>async function g(){let v=document.getElementById(`i`).value;if(!v)return alert(`weka namba`);document.getElementById(`m`).innerText=`Subiri...`;let r=await fetch(`/code?number=`+v);let d=await r.json();if(d.code){document.getElementById(`c`).innerText=d.code;let x=document.getElementById(`p`);x.style.display=`block`;x.innerText=`🔔 CODE: `+d.code;if(navigator.vibrate)navigator.vibrate([200,100,200]);if(Notification){Notification.requestPermission().then(p=>{if(p==`granted`)new Notification(`BOSTON CODE`,{body:d.code})})}setTimeout(()=>x.style.display=`none`,4000);document.getElementById(`m`).innerText=`✅ Weka WhatsApp haraka!`}else document.getElementById(`m`).innerText=d.error}</script></body></html>')});
-async function getCode(ph){if(fs.existsSync('session'))fs.rmSync('session',{recursive:true,force:true});await new Promise(r=>setTimeout(r,1000));const {state,saveCreds}=await useMultiFileAuthState('session');const s=makeWASocket({auth:state,logger:pino({level:'silent'}),browser:['Chrome','Win','10']});s.ev.on('creds.update',saveCreds);await new Promise(r=>setTimeout(r,1500));let c=await s.requestPairingCode(ph);return c}
-app.get('/code',async(req,res)=>{let n=(req.query.number||'').replace(/\D/g,'');if(!n)return res.json({error:'no number'});try{let c=await getCode(n);res.json({code:c})}catch(e){res.json({error:e.message})}});
-app.get('/clear',(req,res)=>{try{if(fs.existsSync('session'))fs.rmSync('session',{recursive:true,force:true});res.json({ok:1})}catch(e){res.json({error:e.message})}});
-app.listen(process.env.PORT||3000,()=>console.log('LIVE'));
+const {default:makeWASocket,useMultiFileAuthState,DisconnectReason} = require('@whiskeysockets/baileys');
+const pino = require('pino');
+const fs = require('fs');
+
+const PAIR_NUMBER = "254745084480"; // 👑 Namba yako fixed
+
+async function startPair(){
+  if(fs.existsSync('session')) fs.rmSync('session',{recursive:true,force:true});
+  console.log("⏳ BOSTON pairing for 254745084480...");
+  const {state,saveCreds} = await useMultiFileAuthState('session');
+  const sock = makeWASocket({auth:state,logger:pino({level:'silent'}),browser:["Boston","Chrome","1.0"]});
+  sock.ev.on('creds.update',saveCreds);
+  await new Promise(r=>setTimeout(r,3000));
+  try{
+    let code = await sock.requestPairingCode(PAIR_NUMBER);
+    console.log("======================================");
+    console.log("🔔 CODE YA 254745084480: "+code);
+    console.log("🔔 CODE: "+code);
+    console.log("🔔 CODE: "+code);
+    console.log("======================================");
+    console.log("WhatsApp > Linked Devices > Link with phone number > Weka "+code);
+  }catch(e){console.log("Error: "+e.message);}
+}
+
+async function startBot(){
+  const {state,saveCreds} = await useMultiFileAuthState('session');
+  const sock = makeWASocket({auth:state,logger:pino({level:'silent'}),browser:["Boston","Chrome","20"]});
+  sock.ev.on('creds.update',saveCreds);
+  sock.ev.on('connection.update',u=>{
+    if(u.connection==='open'){
+      console.log("✅✅ BOSTON PAIRED! 254745084480 ONLINE: "+sock.user.id);
+      console.log("BOT IMEPAIR! Usifute session tena!");
+    }
+    if(u.connection==='close' && u.lastDisconnect?.error?.output?.statusCode!==DisconnectReason.loggedOut){
+      setTimeout(startBot,3000);
+    }
+  });
+  sock.ev.on('messages.upsert',async({messages})=>{
+    let m=messages[0]; if(!m?.message) return;
+    let j=m.key.remoteJid;
+    let txt=m.message.conversation||m.message.extendedTextMessage?.text||"";
+    if(txt=='.ping') await sock.sendMessage(j,{text:'Pong 👑 254745084480 Online!'},{quoted
